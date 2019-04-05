@@ -39,7 +39,7 @@ describe("ClusterProfiles", () => {
 
     it("should deserialize cluster profiles", () => {
       const clusterProfilesJSON = clusterProfilesTestData();
-      const clusterProfiles      = ClusterProfiles.fromJSON(clusterProfilesJSON);
+      const clusterProfiles     = ClusterProfiles.fromJSON(clusterProfilesJSON);
 
       expect(clusterProfiles.length).toBe(2);
       expect(clusterProfiles[0].id()).toEqual("cluster_1");
@@ -52,6 +52,56 @@ describe("ClusterProfiles", () => {
       expect(clusterProfiles[1].properties().valueFor("key_1")).toEqual("value_1");
       expect(clusterProfiles[1].properties().valueFor("key_2")).toEqual("value_2");
     });
+  });
 
+  it("should group cluster profiles by plugin id", () => {
+    const clusterProfilesJSON = clusterProfilesTestData();
+    clusterProfilesJSON._embedded.cluster_profiles.push(clusterProfileTestData("cluster_3", "plugin_1"));
+    const clusterProfiles = ClusterProfiles.fromJSON(clusterProfilesJSON);
+
+    const groupedClusterProfiles = clusterProfiles.groupByPlugin();
+
+    expect(groupedClusterProfiles.plugin_1).toHaveLength(2);
+    expect(groupedClusterProfiles.plugin_1[0].id()).toEqual("cluster_1");
+    expect(groupedClusterProfiles.plugin_1[1].id()).toEqual("cluster_3");
+
+    expect(groupedClusterProfiles.plugin_2).toHaveLength(1);
+    expect(groupedClusterProfiles.plugin_2[0].id()).toEqual("cluster_2");
+  });
+});
+
+describe("Cluster Profile Validations", () => {
+  it("should validate presence of id", () => {
+    const clusterProfileJson = clusterProfileTestData("cluster_1", "plugin_1");
+    delete clusterProfileJson.id;
+    const clusterProfile = ClusterProfile.fromJSON(clusterProfileJson);
+    clusterProfile.isValid();
+
+    const errors = clusterProfile.errors();
+    expect(errors.hasErrors()).toBeTruthy();
+    expect(errors.errorsForDisplay("id")).toEqual("Id must be present.");
+  });
+
+  it("should validate format of id", () => {
+    const clusterProfile = ClusterProfile.fromJSON(clusterProfileTestData("cluster id with spaces not allowed", "plugin_1"));
+
+    clusterProfile.isValid();
+
+    const errors = clusterProfile.errors();
+    expect(errors.hasErrors()).toBeTruthy();
+    expect(errors.errorsForDisplay("id"))
+      .toEqual(
+        "Invalid id. This must be alphanumeric and can contain hyphens, underscores and periods (however, it cannot start with a period). The maximum allowed length is 255 characters.");
+  });
+
+  it("should validate presence of plugin id", () => {
+    const clusterProfileJson = clusterProfileTestData("cluster_1", "plugin_1");
+    delete clusterProfileJson.plugin_id;
+    const clusterProfile = ClusterProfile.fromJSON(clusterProfileJson);
+    clusterProfile.isValid();
+
+    const errors = clusterProfile.errors();
+    expect(errors.hasErrors()).toBeTruthy();
+    expect(errors.errorsForDisplay("pluginId")).toEqual("Plugin id must be present.");
   });
 });
