@@ -13,20 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import "../../global/common";
 
-.pipeline-details-container {
-  display:       flex;
-  background:    $element-bg;
-  border:        1px solid $line-color;
-  padding:       20px 30px 10px;
-  margin-bottom: 20px;
-}
+describe("AddPipeline: Material Editor", () => {
 
-.material-section {
-  margin-top: 20px;
-}
-
-.text-align-right {
-  text-align: right;
-}
+  // it("should render foo", () => {});
+});

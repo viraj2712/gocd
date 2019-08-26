@@ -15,11 +15,18 @@
  */
 
 import m from "mithril";
+import {Material} from "models/new_pipeline_configs/materials";
 import {PipelineConfig} from "models/new_pipeline_configs/pipeline_config";
 import {Page} from "views/pages/page";
 import {PipelineConfigCreateWidget} from "views/pages/pipeline_configs/pipeline_config_create_widget";
 
+export interface MaterialOperations {
+  onAdd: (material: Material) => void;
+  onDelete: (material: Material) => void;
+}
+
 interface State {
+  materialOperations: MaterialOperations;
   pipelineConfig: PipelineConfig;
 }
 
@@ -27,6 +34,18 @@ export class CreatePipelinePage extends Page<null, State> {
   oninit(vnode: m.Vnode<null, State>) {
     super.oninit(vnode);
     vnode.state.pipelineConfig = new PipelineConfig("", [], []);
+
+    vnode.state.materialOperations = {
+      onAdd(material: Material) {
+        vnode.state.pipelineConfig.materials().add(material);
+        m.redraw();
+      },
+      onDelete(material: Material) {
+        vnode.state.pipelineConfig.materials().delete(material);
+        m.redraw();
+      }
+    };
+
   }
 
   componentToDisplay(vnode: m.Vnode<null, State>): m.Children {
