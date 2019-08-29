@@ -30,7 +30,6 @@ import {
   DependencyMaterialAttributesJSON,
   GitMaterialAttributesJSON,
   HgMaterialAttributesJSON,
-  MaterialAttributesJSON,
   MaterialJSON,
   P4MaterialAttributesJSON,
   SvnMaterialAttributesJSON,
@@ -72,10 +71,6 @@ export interface DependencyMaterialAttributes extends ValidatableMixin {
 export class Materials extends NameableSet<Material> {
   constructor(...materials: Material[]) {
     super(materials);
-  }
-
-  static fromJSON(material: MaterialJSON): Material {
-    return new Material(material.type, MaterialAttributes.deserialize(material));
   }
 }
 
@@ -121,20 +116,6 @@ export class Material extends ValidatableMixin {
     return this.attributes().name() || "";
   }
 
-  typeProxy(value?: any): string {
-    if (arguments.length > 0) {
-      const newType = value;
-      if (this.type() !== newType) {
-        this.attributes(MaterialAttributes.deserialize({
-                                                         type: newType,
-                                                         attributes: ({} as MaterialAttributesJSON)
-                                                       }));
-      }
-      this.type(newType);
-    }
-    return this.type();
-  }
-
   materialUrl(): string {
     switch (this.type()) {
       case "git":
@@ -169,15 +150,6 @@ export class Material extends ValidatableMixin {
     }
 
     return raw;
-  }
-
-  pacConfigFiles() {
-    const payload = this.toApiPayload();
-    return ApiRequestBuilder.POST(
-      SparkRoutes.pacListConfigFiles(),
-      Material.API_VERSION_HEADER,
-      {payload}
-    );
   }
 
   checkConnection(pipelineGroup?: string) {
