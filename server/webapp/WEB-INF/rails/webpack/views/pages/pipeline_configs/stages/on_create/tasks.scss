@@ -82,3 +82,15 @@ $prompt: #999;
   width:      200px;
   margin-top: 20px;
 }
+
+.on-cancel-task-container {
+  display: none;
+}
+
+.show {
+  display: block;
+}
+
+.on-cancel-task-checkbox {
+  cursor: pointer;
+}

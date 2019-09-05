@@ -16,7 +16,7 @@
 
 import m from "mithril";
 import Stream from "mithril/stream";
-import {ExecTask} from "models/new_pipeline_configs/task";
+import {ExecTask, Task} from "models/new_pipeline_configs/task";
 import {Tasks} from "models/new_pipeline_configs/tasks";
 import * as simulateEvent from "simulate-event";
 import {TasksTab} from "views/pages/pipeline_configs/stages/on_create/tasks_widget";
@@ -25,13 +25,15 @@ import {TestHelper} from "views/pages/spec/test_helper";
 describe("Pipeline Config - Job Settings Modal - Tasks Widget - Tasks List", () => {
   const helper = new TestHelper();
   let tasks: Stream<Tasks>;
+  let onCancelTask: Stream<Task>;
 
   beforeEach(() => {
-    tasks = Stream(new Tasks([
-                               new ExecTask("ls foo"),
-                               new ExecTask("sleep 30")
-                             ]));
-    helper.mount(() => <TasksTab tasks={tasks}/>);
+    tasks        = Stream(new Tasks([
+                                      new ExecTask("ls foo"),
+                                      new ExecTask("sleep 30")
+                                    ]));
+    onCancelTask = Stream(new ExecTask("on cancel task") as Task);
+    helper.mount(() => <TasksTab tasks={tasks} onCancelTask={onCancelTask}/>);
   });
 
   afterEach(() => {

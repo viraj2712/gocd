@@ -48,6 +48,9 @@ export class TaskEditor extends MithrilComponent<Attrs, State> {
   }
 
   view(vnode: m.Vnode<Attrs, State>) {
+    // Need to think about this
+    vnode.state.inputValue = Stream(vnode.attrs.task.command() ? vnode.attrs.task.command()! : "");
+
     return <code class={css.execEditor}>
       <div data-test-id="caveats-container" onclick={vnode.state.toggleCaveats}
            class={`${css.caveats} ${vnode.state.showCaveats() ? css.open : undefined}`}>

@@ -14,22 +14,49 @@
  * limitations under the License.
  */
 
-import {MithrilViewComponent} from "jsx/mithril-component";
+import {MithrilComponent, MithrilViewComponent} from "jsx/mithril-component";
 import m from "mithril";
+import Stream from "mithril/stream";
 import {ExecTask, Task, TaskType} from "models/new_pipeline_configs/task";
 import {RadioField} from "views/components/forms/input_fields";
+import {AdvancedSettings} from "views/pages/pipeline_configs/advanced_settings/advanced_settings";
 import {TaskEditor} from "views/pages/pipeline_configs/stages/on_create/task_editor_widget";
 import styles from "./tasks.scss";
 
-export interface TasksDescriptionAttrs {
-  task: Task;
+interface TaskDescriptionState {
+  showOnCancelTaskSection: Stream<boolean>;
+  isChecked: Stream<boolean>;
+  onCancelTaskClick: () => void;
 }
 
-class ExecTaskDescriptionWidget extends MithrilViewComponent<TasksDescriptionAttrs> {
-  view(vnode: m.Vnode<TasksDescriptionAttrs>) {
-    // @ts-ignore
-    const task = vnode.attrs.task as ExecTask;
+export interface TasksDescriptionAttrs {
+  task: Task;
+  onCancelTask: Task;
+}
 
+class ExecTaskDescriptionWidget extends MithrilComponent<TasksDescriptionAttrs, TaskDescriptionState> {
+  oninit(vnode: m.Vnode<TasksDescriptionAttrs, TaskDescriptionState>): any {
+    vnode.state.showOnCancelTaskSection = Stream();
+    vnode.state.isChecked               = Stream();
+
+    vnode.state.onCancelTaskClick = () => {
+      vnode.state.showOnCancelTaskSection(!vnode.state.showOnCancelTaskSection());
+      vnode.state.isChecked(!vnode.state.isChecked());
+    };
+  }
+
+  view(vnode: m.Vnode<TasksDescriptionAttrs, TaskDescriptionState>) {
+    // @ts-ignore
+    const task         = vnode.attrs.task as ExecTask;
+    const onCancelTask = vnode.attrs.onCancelTask;
+    let optionalOnCancel: m.Children | undefined;
+
+    if (onCancelTask) {
+      optionalOnCancel = <div data-test-id="on-cancel-task-container"
+                              class={`${styles.onCancelTaskContainer} ${vnode.state.showOnCancelTaskSection() ? styles.show : undefined}`}>
+        <TaskEditor task={onCancelTask as ExecTask}/>
+      </div>;
+    }
     return <div data-test-id="exec-task-description">
       <TaskEditor task={task}/>
       <div data-test-id="run-if-conditions-container" class={styles.runIfConditionsWrapper}>
@@ -43,6 +70,16 @@ class ExecTaskDescriptionWidget extends MithrilViewComponent<TasksDescriptionAtt
                       {label: "Any", value: "Any"}
                     ]}>
         </RadioField>
+      </div>
+      <div data-test-id="advance-settings-container">
+        <AdvancedSettings>
+          <div data-test-id="on-cancel-task-checkbox" class={styles.onCancelTaskCheckbox}
+               onclick={vnode.state.onCancelTaskClick}>
+            <input data-test-id="on-cancel-task-input" type="checkbox" checked={vnode.state.isChecked()}/> On Cancel
+            Task
+          </div>
+          {optionalOnCancel}
+        </AdvancedSettings>
       </div>
     </div>;
   }

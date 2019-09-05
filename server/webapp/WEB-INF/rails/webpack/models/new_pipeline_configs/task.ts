@@ -34,9 +34,11 @@ export interface Task {
 
 abstract class TaskBase {
   public readonly runIfCondition: Stream<RunIfCondition>;
+  public readonly onCancelTask: Stream<Task | undefined>;
 
   constructor(runIfCondition?: RunIfCondition) {
     this.runIfCondition = Stream(runIfCondition ? runIfCondition : RunIfCondition.Passed);
+    this.onCancelTask   = Stream();
   }
 }
 

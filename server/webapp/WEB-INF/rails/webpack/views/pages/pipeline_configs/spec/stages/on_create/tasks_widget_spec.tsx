@@ -26,12 +26,14 @@ describe("Pipeline Config - Job Settings Modal - Tasks Widget", () => {
   const helper = new TestHelper();
   let tasks: Stream<Tasks>;
   let lsTask: Task, sleepTask: Task;
+  let onCancelTask: Stream<Task>;
 
   beforeEach(() => {
-    lsTask    = new ExecTask("ls foo");
-    sleepTask = new ExecTask("sleep 30");
-    tasks     = Stream(new Tasks([lsTask, sleepTask]));
-    helper.mount(() => <TasksTab tasks={tasks}/>);
+    lsTask       = new ExecTask("ls foo");
+    sleepTask    = new ExecTask("sleep 30");
+    tasks        = Stream(new Tasks([lsTask, sleepTask]));
+    onCancelTask = Stream(new ExecTask("on cancel task") as Task);
+    helper.mount(() => <TasksTab tasks={tasks} onCancelTask={onCancelTask}/>);
   });
 
   afterEach(() => {
@@ -44,28 +46,28 @@ describe("Pipeline Config - Job Settings Modal - Tasks Widget", () => {
 
   it("should render first task by default", () => {
     expect(helper.findByDataTestId("selected-task")).toHaveText(lsTask.represent());
-    expect(helper.find("pre")).toHaveText(lsTask.represent());
+    expect(helper.find("pre")[0]).toHaveText(lsTask.represent());
   });
 
   it("should display appropriate task in task editor on click of task from tasks list", () => {
     expect(helper.findByDataTestId("selected-task")).toHaveText(lsTask.represent());
-    expect(helper.find("pre")).toHaveText(lsTask.represent());
+    expect(helper.find("pre")[0]).toHaveText(lsTask.represent());
 
     simulateEvent.simulate(helper.findByDataTestId("task-representation")[1], "click");
     m.redraw.sync();
 
     expect(helper.findByDataTestId("selected-task")).toHaveText(sleepTask.represent());
-    expect(helper.find("pre")).toHaveText(sleepTask.represent());
+    expect(helper.find("pre")[0]).toHaveText(sleepTask.represent());
   });
 
   it("should select and render the next task when the currently selected task is deleted", () => {
     expect(helper.findByDataTestId("selected-task")).toHaveText(lsTask.represent());
-    expect(helper.find("pre")).toHaveText(lsTask.represent());
+    expect(helper.find("pre")[0]).toHaveText(lsTask.represent());
 
     simulateEvent.simulate(helper.findByDataTestId("Delete-icon").get(0), "click");
     m.redraw.sync();
 
     expect(helper.findByDataTestId("selected-task")).toHaveText(sleepTask.represent());
-    expect(helper.find("pre")).toHaveText(sleepTask.represent());
+    expect(helper.find("pre")[0]).toHaveText(sleepTask.represent());
   });
 });

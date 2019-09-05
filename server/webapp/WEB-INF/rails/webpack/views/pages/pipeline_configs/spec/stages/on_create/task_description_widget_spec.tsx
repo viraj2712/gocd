@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
+import {asSelector} from "helpers/css_proxies";
 import m from "mithril";
-import {ExecTask} from "models/new_pipeline_configs/task";
+import {ExecTask, Task} from "models/new_pipeline_configs/task";
 import * as simulateEvent from "simulate-event";
+import {value} from "views/components/key_value_pair/index.scss";
+import advancedSettingsStyles from "views/pages/pipeline_configs/advanced_settings/advanced_settings.scss";
 import {TaskDescriptionWidget} from "views/pages/pipeline_configs/stages/on_create/task_description_widget";
 import task_terminal_styles from "views/pages/pipeline_configs/stages/on_create/task_terminal.scss";
+import styles from "views/pages/pipeline_configs/stages/on_create/tasks.scss";
 import {TestHelper} from "views/pages/spec/test_helper";
 
 describe("Pipeline Config - Job Settings Modal - Tasks Widget - Task Description", () => {
@@ -26,10 +30,12 @@ describe("Pipeline Config - Job Settings Modal - Tasks Widget - Task Description
 
   describe("Exec", () => {
     let task: ExecTask;
+    let onCancelTask: Task;
 
     beforeEach(() => {
-      task = new ExecTask("ls foo");
-      helper.mount(() => <TaskDescriptionWidget task={task}/>);
+      task         = new ExecTask("ls foo");
+      onCancelTask = new ExecTask("on cancel task") as Task;
+      helper.mount(() => <TaskDescriptionWidget task={task} onCancelTask={onCancelTask}/>);
     });
 
     afterEach(() => {
@@ -46,7 +52,17 @@ describe("Pipeline Config - Job Settings Modal - Tasks Widget - Task Description
       });
 
       it("should represent the task in the task editor window", () => {
-        expect(helper.find("pre")).toHaveText(task.represent()!);
+        expect(helper.find("pre")[0]).toHaveText(task.represent()!);
+      });
+
+      it("should update the task editor when task model is updated", () => {
+        expect(helper.find("pre")[0]).toHaveText(task.represent()!);
+
+        const updatedCommand = "ls -al";
+        task.command(updatedCommand);
+        m.redraw.sync();
+
+        expect(helper.find("pre")[0]).toContainText(updatedCommand);
       });
 
       it("should render the caveats in the task editor", () => {
@@ -59,7 +75,7 @@ describe("Pipeline Config - Job Settings Modal - Tasks Widget - Task Description
 
         expect(helper.findByDataTestId("caveats-container")).not.toHaveClass(task_terminal_styles.open);
 
-        simulateEvent.simulate(helper.findByDataTestId("caveats-toggle-btn").get(0), "click");
+        simulateEvent.simulate(helper.findByDataTestId("caveats-toggle-btn")[0], "click");
         m.redraw.sync();
 
         expect(helper.findByDataTestId("caveats-container")).toHaveClass(task_terminal_styles.open);
@@ -120,6 +136,46 @@ describe("Pipeline Config - Job Settings Modal - Tasks Widget - Task Description
         expect(helper.findSelectorIn(anyRadioField, "input")).toBeChecked();
       });
     });
-  });
 
+    describe("Advanced Settings", () => {
+      it("should render advance configuration section", () => {
+        expect(helper.findByDataTestId("advance-settings-container")).toBeInDOM();
+      });
+
+      it("should toggle advanced settings on click of toggle button", () => {
+        const sel = asSelector<typeof advancedSettingsStyles>(advancedSettingsStyles);
+
+        const top = helper.q(sel.advancedSettings);
+        expect(top.classList.contains(advancedSettingsStyles.open)).toBe(false);
+        expect(top.classList.contains(advancedSettingsStyles.lockOpen)).toBe(false);
+        expect(window.getComputedStyle(helper.q(sel.details, top)).display).toBe("none");
+
+        helper.click(sel.summary, top);
+        expect(top.classList.contains(advancedSettingsStyles.open)).toBe(true);
+        expect(top.classList.contains(advancedSettingsStyles.lockOpen)).toBe(false);
+        expect(window.getComputedStyle(helper.q(sel.details, top)).display).toBe("block");
+
+        helper.click(sel.summary, top);
+        expect(top.classList.contains(advancedSettingsStyles.open)).toBe(false);
+        expect(top.classList.contains(advancedSettingsStyles.lockOpen)).toBe(false);
+        expect(window.getComputedStyle(helper.q(sel.details, top)).display).toBe("none");
+      });
+
+      it("should render on cancel task checkbox", () => {
+        expect(helper.findByDataTestId("on-cancel-task-checkbox")).toBeInDOM();
+        expect(helper.findByDataTestId("on-cancel-task-checkbox")).toContainText("On Cancel Task");
+      });
+
+      it("should render new task editor on click of onCancelTask", () => {
+        expect(helper.findByDataTestId("on-cancel-task-container")).not.toHaveClass(styles.show);
+        expect(helper.findByDataTestId("on-cancel-task-input")).not.toBeChecked();
+
+        simulateEvent.simulate(helper.findByDataTestId("on-cancel-task-checkbox")[0], "click");
+        m.redraw.sync();
+
+        expect(helper.findByDataTestId("on-cancel-task-input")).toBeChecked();
+        expect(helper.find("code")[1]).toBeInDOM();
+      });
+    });
+  });
 });

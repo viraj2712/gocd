@@ -17,6 +17,7 @@
 import {MithrilComponent} from "jsx/mithril-component";
 import m from "mithril";
 import Stream from "mithril/stream";
+import {Task} from "models/new_pipeline_configs/task";
 import {Tasks} from "models/new_pipeline_configs/tasks";
 import {TasksListWidget} from "views/pages/pipeline_configs/stages/on_create/tasks_list_widget";
 import {TaskDescriptionWidget} from "./task_description_widget";
@@ -28,16 +29,17 @@ export interface State {
 
 interface Attrs {
   tasks: Stream<Tasks>;
+  onCancelTask: Stream<Task>;
 }
 
 export class TasksTab extends MithrilComponent<Attrs, State> {
   oninit(vnode: m.Vnode<Attrs, State>) {
-
     vnode.state.selectedTaskIndex = Stream(0);
   }
 
   view(vnode: m.Vnode<Attrs, State>) {
-    const taskToRepresent = vnode.attrs.tasks().list()[vnode.state.selectedTaskIndex()];
+    const taskToRepresent         = vnode.attrs.tasks().list()[vnode.state.selectedTaskIndex()];
+    const onCancelTaskToRepresent = vnode.attrs.onCancelTask();
 
     //todo: fix the data test ids for the tasks as the tasks are unique per job
     //may be change the data test id to include pipeline-stage-job name
@@ -47,7 +49,8 @@ export class TasksTab extends MithrilComponent<Attrs, State> {
                        key={vnode.attrs.tasks.toString()}
                        selectedTaskIndex={vnode.state.selectedTaskIndex}/>
       <TaskDescriptionWidget key={taskToRepresent.represent()}
-                             task={taskToRepresent}/>
+                             task={taskToRepresent}
+                             onCancelTask={onCancelTaskToRepresent}/>
     </div>;
   }
 }
