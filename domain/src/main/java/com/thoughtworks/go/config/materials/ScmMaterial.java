@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -101,6 +102,10 @@ public abstract class ScmMaterial extends AbstractMaterial implements SecretPara
             regex = regex.substring(1);
         }
         return name.matches(regex);
+    }
+
+    public List<String> branches() {
+        throw new RuntimeException("Not supported by this material type: " + this.getType());
     }
 
     public void checkout(File baseDir, Revision revision, SubprocessExecutionContext execCtx) {
