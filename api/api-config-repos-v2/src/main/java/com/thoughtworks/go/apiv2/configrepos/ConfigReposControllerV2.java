@@ -33,6 +33,7 @@ import com.thoughtworks.go.server.service.EntityHashingService;
 import com.thoughtworks.go.server.service.result.HttpLocalizedOperationResult;
 import com.thoughtworks.go.spark.spring.SparkSpringController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import spark.Request;
 import spark.Response;
@@ -93,6 +94,16 @@ public class ConfigReposControllerV2 extends ApiController implements SparkSprin
         }
 
         return jsonizeAsTopLevelObject(req, w -> ConfigReposConfigRepresenterV2.toJSON(w, repos));
+    }
+
+    String newBranch(Request req, Response res) {
+        res.status(HttpStatus.NO_CONTENT.value());
+        return "";
+    }
+
+    String removeBranch(Request req, Response res) {
+        res.status(HttpStatus.NO_CONTENT.value());
+        return "";
     }
 
     String showRepo(Request req, Response res) {
